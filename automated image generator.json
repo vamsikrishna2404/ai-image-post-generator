@@ -1,0 +1,313 @@
+{
+  "name": "automated image generator",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "18emP69QGExRcTVF0MrvyIfhWo5Suq-tNVHqbQt-5NWA",
+          "mode": "list",
+          "cachedResultName": "newslink",
+          "cachedResultUrl": "docs.google.com"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "docs.google.com"
+        },
+        "event": "rowUpdate",
+        "options": {}
+      },
+      "id": "3c6571d2-b28d-43c4-b17d-f6127c5a7d93",
+      "name": "Google Sheets Trigger",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        0
+      ],
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name":  "Google Sheets Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Summarize the following AI news article clearly and accurately.\n\nFocus on:\n- What was announced\n- The main features or capabilities\n- Important facts, numbers, or dates mentioned\n- Why this development matters\n- How it may affect users, developers, businesses, or the future of AI\n\nKeep the summary concise and easy to understand.\n\nDo not invent any information.\nUse only the information available in the article.\n\nArticle:\n{{ $json.link }}",
+        "batching": {}
+      },
+      "id": "8b8eb445-f920-437e-8926-deba4d0994d2",
+      "name": "Summarize Article",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -144,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "0f38758c-1a39-45e0-ba3b-a580b59ed910",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -80,
+        240
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "id": "cafb8942-3677-40eb-8cc5-8b7ea5ab4806",
+      "name": "Google Gemini Chat Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        288,
+        240
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OUR_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a concise image-generation prompt, maximum 50 words, for a professional LinkedIn post based on the AI update below.\n\nCreate a modern, cinematic technology visual suitable for LinkedIn. Focus on artificial intelligence, innovation, humans and technology, professional composition, futuristic lighting, clean design, and a business/technology atmosphere.\n\nDo not invent unsupported details.\n\nLinkedIn post:\n{{ $json.text }}",
+        "batching": {}
+      },
+      "id": "837293a0-b5b8-4feb-b49f-8a336adb2166",
+      "name": "Generate Image Prompt",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        560,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "id": "78760a12-02c5-4f5d-a3d3-0f19b300abeb",
+      "name": "Google Gemini Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        240
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OUR_GEMINI_CREDENTIAL_ID",
+          "name": "Google Gemini Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://router.huggingface.co/fal-ai/fal-ai/flux/schnell",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "prompt",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "5918d543-0855-4aaf-9adc-a68c12086ebd",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        928,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "OUR_HEADER_AUTH_CREDENTIAL_ID",
+          "name": "Header Auth Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "person": "YOkfHC_RE4",
+        "text": "={{ $('Create Linkedin Post').item.json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "f3507aa7-c851-42b5-a624-f928a5605259",
+      "name": "Create a post",
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "YOUR_LINKEDIN_CREDENTIAL_ID",
+          "name": "LinkedIn Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Act as a professional AI and technology content creator.\n\nCreate an engaging LinkedIn post based on the AI news summary below.\n\nInclude:\n- A strong professional headline\n- A clear explanation of the AI development\n- The most important capabilities or updates\n- Why this development matters\n- Its possible impact on developers, businesses, jobs, research, or the future of technology\n- A short professional call to action or discussion question\n- 3 to 5 relevant hashtags\n\nKeep the tone professional, insightful, and easy to understand.\n\nDo not invent information that is not present in the summary.\n\nKeep the post concise and ready to publish directly on LinkedIn.\n\nAI news summary:\n{{ $json.text }}",
+        "batching": {}
+      },
+      "id": "b2fce0ac-160d-4b95-ad83-dca641e46339",
+      "name": "Create Linkedin Post",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        208,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Summarize Article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Article": {
+      "main": [
+        [
+          {
+            "node": "Create Linkedin Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarize Article",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Create Linkedin Post",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image Prompt": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Image Prompt",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Create a post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Linkedin Post": {
+      "main": [
+        [
+          {
+            "node": "Generate Image Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "80afcf5a-483b-435e-9189-5bd1c1df88d6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7f983b148edb983919818dd492e3a3195c77d2d9fa75524b2169e0f1417cc74b"
+  },
+  "nodeGroups": [],
+  "id": "sDCnyP5CeMqmSGW9",
+  "tags": []
+}
